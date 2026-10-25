@@ -1,6 +1,6 @@
 # openbee Discord channel (reference plugin)
 
-A minimal Discord channel for openbee, built on [`@theopenbee/channel-sdk`](../../sdk/channel-node). It is a reference implementation of the [channel plugin protocol](../../docs/channel-plugin-protocol.md) and is not published to npm.
+A minimal Discord channel for openbee, built on [`@theopenbee/channel-sdk`](https://www.npmjs.com/package/@theopenbee/channel-sdk). It is a reference implementation of the [channel plugin protocol](https://github.com/theopenbee/openbee/blob/main/docs/channel-plugin-protocol.md) and is installed from GitHub rather than npm.
 
 ## Behaviour
 
@@ -19,7 +19,14 @@ A minimal Discord channel for openbee, built on [`@theopenbee/channel-sdk`](../.
 ## Install
 
 ```sh
-cd plugins/discord
+openbee plugin install github:theopenbee/channel-discord
+```
+
+Or from a local checkout:
+
+```sh
+git clone https://github.com/theopenbee/channel-discord.git
+cd channel-discord
 pnpm install
 pnpm build
 openbee plugin install "$(pwd)"
@@ -40,6 +47,7 @@ bee:
 ## Development
 
 ```sh
+pnpm install
 pnpm build
 pnpm test
 ```

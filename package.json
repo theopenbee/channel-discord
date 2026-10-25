@@ -4,17 +4,26 @@
   "private": true,
   "description": "Discord reference channel plugin for openbee",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theopenbee/channel-discord.git"
+  },
   "type": "module",
   "main": "./dist/index.js",
+  "files": [
+    "dist",
+    "openbee.plugin.json"
+  ],
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs",
+    "prepare": "npm run build"
   },
   "dependencies": {
-    "@theopenbee/channel-sdk": "link:../../sdk/channel-node",
+    "@theopenbee/channel-sdk": "^0.1.0",
     "discord.js": "^14.16.0"
   },
   "devDependencies": {
