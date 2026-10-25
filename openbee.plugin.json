@@ -2,7 +2,7 @@
   "protocol_version": 1,
   "id": "discord",
   "name": { "en": "Discord", "zh": "Discord" },
-  "description": { "en": "Discord bot channel (reference plugin)", "zh": "Discord 机器人渠道（参考插件）" },
+  "description": { "en": "Discord bot channel", "zh": "Discord 机器人渠道" },
   "command": ["node", "dist/index.js"],
   "config": [
     {

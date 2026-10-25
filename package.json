@@ -1,12 +1,20 @@
 {
-  "name": "openbee-channel-discord",
+  "name": "@theopenbee/channel-discord",
   "version": "0.1.0",
-  "private": true,
-  "description": "Discord reference channel plugin for openbee",
+  "description": "Discord channel plugin for openbee",
+  "keywords": [
+    "openbee",
+    "openbee-plugin",
+    "discord"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/theopenbee/channel-discord.git"
+  },
+  "homepage": "https://github.com/theopenbee/channel-discord#readme",
+  "bugs": {
+    "url": "https://github.com/theopenbee/channel-discord/issues"
   },
   "type": "module",
   "main": "./dist/index.js",
@@ -16,6 +24,10 @@
   ],
   "engines": {
     "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
