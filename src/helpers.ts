@@ -1,5 +1,9 @@
 export const DISCORD_MESSAGE_LIMIT = 2000;
 
+const DOWNLOAD_ATTEMPTS = 3;
+const DOWNLOAD_RETRY_DELAY = 500;
+const DOWNLOAD_TIMEOUT = 120_000;
+
 export function chunkText(text: string, limit = DISCORD_MESSAGE_LIMIT): string[] {
   const chunks: string[] = [];
   let rest = text;
@@ -62,6 +66,28 @@ export function planAttachments<T extends SizedAttachment>(list: T[], maxSize: n
     else keep.push(a);
   }
   return { keep, notes };
+}
+
+export interface DownloadOptions {
+  delay?: number;
+  timeout?: number;
+  onRetry?: (err: unknown) => void;
+}
+
+export async function downloadFile(url: string, { delay = DOWNLOAD_RETRY_DELAY, timeout = DOWNLOAD_TIMEOUT, onRetry }: DownloadOptions = {}): Promise<Uint8Array> {
+  let wait = delay;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(timeout) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return new Uint8Array(await res.arrayBuffer());
+    } catch (err) {
+      if (attempt >= DOWNLOAD_ATTEMPTS) throw err;
+      onRetry?.(err);
+    }
+    await new Promise((resolve) => setTimeout(resolve, wait));
+    wait *= 2;
+  }
 }
 
 export type LoginProblem = "token" | "intents";

@@ -1,7 +1,7 @@
 import { Client, Events, GatewayIntentBits, Partials, type Message } from "discord.js";
 import { ConfigError, type Attachment, type ChannelContext, type ChannelDefinition, type SendRequest } from "@theopenbee/channel-sdk";
 
-import { attachmentType, chunkText, classifyLoginError, decodeRaw, encodeRaw, planAttachments, stripMention } from "./helpers.js";
+import { attachmentType, chunkText, classifyLoginError, decodeRaw, downloadFile, encodeRaw, planAttachments, stripMention } from "./helpers.js";
 
 const DEFAULT_MAX_MEDIA_SIZE = 10 * 1024 * 1024;
 
@@ -34,9 +34,10 @@ export function createDiscordChannel(): ChannelDefinition {
     const attachments: Attachment[] = [];
     for (const a of plan.keep) {
       try {
-        const res = await fetch(a.url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const path = await ctx.saveMedia(new Uint8Array(await res.arrayBuffer()), extension(a.name));
+        const data = await downloadFile(a.url, {
+          onRetry: (err) => ctx.log.warn("attachment download failed, retrying", { name: a.name, error: String(err) }),
+        });
+        const path = await ctx.saveMedia(data, extension(a.name));
         attachments.push({ type: attachmentType(a.contentType), path, name: a.name });
       } catch (err) {
         ctx.log.warn("attachment download failed", { name: a.name, error: String(err) });
