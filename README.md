@@ -18,6 +18,8 @@ A minimal Discord channel for openbee, built on [`@theopenbee/channel-sdk`](http
 
 ## Install
 
+Install it from **Settings → Plugins → Marketplace**, or run:
+
 ```sh
 openbee plugin install @theopenbee/channel-discord
 ```
@@ -31,17 +33,15 @@ npm install
 openbee plugin install "$(pwd)"
 ```
 
-Then enable it with `openbee config`, or add it to `config.yaml` and restart openbee:
+Then fill in its settings and enable it under **Settings → Plugins** in the desktop app or the web console, or run `openbee plugin configure discord`. Setup guide: https://theopenbee.com/docs/chat-apps/discord/
 
-```yaml
-bee:
-  platforms:
-    discord:
-      enabled: true
-      bot_name: OpenBee
-      token: "<bot token>"
-      allowed_guilds: []
-```
+Settings, also accepted as `openbee plugin configure discord --set key=value`:
+
+| Key | Default | |
+|---|---|---|
+| `token` | | Bot token. Required. |
+| `allowed_guilds` | empty | Server IDs to answer in; empty allows all. DMs are always handled. |
+| `max_media_size` | `10485760` | Largest incoming attachment, in bytes. |
 
 ## Development
 
