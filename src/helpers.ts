@@ -53,6 +53,12 @@ export function decodeRaw(raw: string | undefined): RawRef | undefined {
   return undefined;
 }
 
+const SNOWFLAKE = /^\d+$/;
+
+export function replyTarget(...ids: (string | undefined)[]): string | undefined {
+  return ids.find((id) => id !== undefined && SNOWFLAKE.test(id));
+}
+
 export interface SizedAttachment {
   name: string;
   size: number;

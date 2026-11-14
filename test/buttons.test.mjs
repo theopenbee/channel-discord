@@ -91,7 +91,7 @@ test("the owner's click sends the button text and closes the buttons", async () 
   assert.deepEqual(inbound, {
     chat_id: "c1",
     sender_id: "u1",
-    message_id: "button:m1",
+    message_id: "m1",
     text: "/clear cancel",
     raw: JSON.stringify({ channel_id: "c1", message_id: "m1" }),
     context: { guild_id: "g1", channel_id: "c1", author_name: "ada" },

@@ -2,7 +2,7 @@ import { Client, Events, GatewayIntentBits, MessageFlags, Partials, type ButtonI
 import { ConfigError, type Attachment, type ChannelContext, type ChannelDefinition, type SendRequest } from "@theopenbee/channel-sdk";
 
 import { ButtonStore, buttonRows, handleButtonClick, type ButtonClick } from "./buttons.js";
-import { attachmentType, chunkText, classifyLoginError, decodeRaw, downloadFile, encodeRaw, planAttachments, stripMention } from "./helpers.js";
+import { attachmentType, chunkText, classifyLoginError, decodeRaw, downloadFile, encodeRaw, planAttachments, replyTarget, stripMention } from "./helpers.js";
 
 const DEFAULT_MAX_MEDIA_SIZE = 10 * 1024 * 1024;
 
@@ -139,7 +139,7 @@ export function createDiscordChannel(): ChannelDefinition {
       if (!client) throw new Error("discord client is not started");
       const channel = await client.channels.fetch(msg.chat_id);
       if (!channel || !channel.isSendable()) throw new Error(`discord channel ${msg.chat_id} is not sendable`);
-      const replyId = msg.proactive ? undefined : (msg.reply_to?.message_id ?? decodeRaw(msg.reply_to?.raw)?.message_id);
+      const replyId = msg.proactive ? undefined : replyTarget(msg.reply_to?.message_id, decodeRaw(msg.reply_to?.raw)?.message_id);
       let reply = replyId ? { messageReference: replyId, failIfNotExists: false } : undefined;
       let lastId: string | undefined;
       const chunks = chunkText(msg.content ?? "");

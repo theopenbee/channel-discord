@@ -10,6 +10,7 @@ import {
   downloadFile,
   encodeRaw,
   planAttachments,
+  replyTarget,
   stripMention,
 } from "../dist/helpers.js";
 
@@ -126,4 +127,11 @@ test("a stalled download times out and is retried", async (t) => {
   const { url, requests } = await mediaServer(t, () => {});
   await assert.rejects(downloadFile(url, { delay: 1, timeout: 20 }));
   assert.equal(requests(), 3);
+});
+
+test("replyTarget picks the first Discord message id", () => {
+  assert.equal(replyTarget("123", "456"), "123");
+  assert.equal(replyTarget("button:123", "456"), "456");
+  assert.equal(replyTarget(undefined, undefined), undefined);
+  assert.equal(replyTarget("abc"), undefined);
 });

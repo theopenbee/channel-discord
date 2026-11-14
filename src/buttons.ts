@@ -171,7 +171,7 @@ export async function handleButtonClick(ctx: ChannelContext, store: ButtonStore,
   const inbound: InboundMessage = {
     chat_id: click.channelId,
     sender_id: click.user.id,
-    message_id: `button:${click.message.id}`,
+    message_id: click.message.id,
     text,
     raw: encodeRaw({ channel_id: click.channelId, message_id: click.message.id }),
     context: { guild_id: click.guildId ?? "", channel_id: click.channelId, author_name: click.user.username },
