@@ -1,6 +1,7 @@
-import { Client, Events, GatewayIntentBits, Partials, type Message } from "discord.js";
+import { Client, Events, GatewayIntentBits, MessageFlags, Partials, type ButtonInteraction, type Message } from "discord.js";
 import { ConfigError, type Attachment, type ChannelContext, type ChannelDefinition, type SendRequest } from "@theopenbee/channel-sdk";
 
+import { ButtonStore, buttonRows, handleButtonClick, type ButtonClick } from "./buttons.js";
 import { attachmentType, chunkText, classifyLoginError, decodeRaw, downloadFile, encodeRaw, planAttachments, stripMention } from "./helpers.js";
 
 const DEFAULT_MAX_MEDIA_SIZE = 10 * 1024 * 1024;
@@ -24,9 +25,23 @@ function extension(name: string): string {
   return dot > 0 ? name.slice(dot) : "";
 }
 
+function asClick(i: ButtonInteraction): ButtonClick {
+  return {
+    customId: i.customId,
+    channelId: i.channelId,
+    guildId: i.guildId,
+    user: { id: i.user.id, username: i.user.username },
+    message: { id: i.message.id, content: i.message.content },
+    update: (options) => i.update(options),
+    reply: (options) => i.reply({ content: options.content, flags: MessageFlags.Ephemeral }),
+    followUp: (options) => i.followUp({ content: options.content, flags: MessageFlags.Ephemeral }),
+  };
+}
+
 export function createDiscordChannel(): ChannelDefinition {
   let client: Client | undefined;
   let cfg: DiscordConfig;
+  let buttons: ButtonStore | undefined;
 
   const downloadAttachments = async (ctx: ChannelContext, message: Message): Promise<{ attachments: Attachment[]; notes: string[] }> => {
     const list = [...message.attachments.values()].map((a) => ({ name: a.name, size: a.size, url: a.url, contentType: a.contentType }));
@@ -76,15 +91,30 @@ export function createDiscordChannel(): ChannelDefinition {
     });
   };
 
+  const onButton = async (ctx: ChannelContext, i: ButtonInteraction) => {
+    if (i.inGuild() && cfg.allowedGuilds.length > 0 && !cfg.allowedGuilds.includes(i.guildId)) return;
+    await handleButtonClick(ctx, buttons!, asClick(i), () => {
+      if (i.channel?.isSendable()) i.channel.sendTyping().catch(() => undefined);
+    });
+  };
+
   return {
+    capabilities: { buttons: true },
     async start(ctx) {
       cfg = readConfig(ctx.config);
+      const openedButtons = await ButtonStore.open(ctx.dataDir);
+      buttons = openedButtons.store;
+      if (openedButtons.problem) ctx.log.error("cannot read stored buttons, starting with none", { error: openedButtons.problem });
       client = new Client({
         intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.DirectMessages],
         partials: [Partials.Channel],
       });
       client.on(Events.MessageCreate, (message) => {
         onMessage(ctx, message).catch((err) => ctx.log.error("handle message failed", { error: String(err) }));
+      });
+      client.on(Events.InteractionCreate, (interaction) => {
+        if (!interaction.isButton()) return;
+        onButton(ctx, interaction).catch((err) => ctx.log.error("handle button failed", { error: String(err) }));
       });
       client.on(Events.Error, (err) => ctx.log.error("discord client error", { error: String(err) }));
       const ready = new Promise<void>((resolve) => client!.once(Events.ClientReady, () => resolve()));
@@ -112,11 +142,19 @@ export function createDiscordChannel(): ChannelDefinition {
       const replyId = msg.proactive ? undefined : (msg.reply_to?.message_id ?? decodeRaw(msg.reply_to?.raw)?.message_id);
       let reply = replyId ? { messageReference: replyId, failIfNotExists: false } : undefined;
       let lastId: string | undefined;
-      for (const chunk of chunkText(msg.content ?? "")) {
+      const chunks = chunkText(msg.content ?? "");
+      const withButtons = msg.buttons?.length && buttons ? msg.buttons : undefined;
+      for (const [i, chunk] of chunks.entries()) {
         if (signal.aborted) throw new Error("send cancelled");
-        const sent = await channel.send({ content: chunk, reply, allowedMentions: { parse: [], repliedUser: true } });
+        const components = withButtons && i === chunks.length - 1 ? buttonRows(withButtons) : undefined;
+        const sent = await channel.send({ content: chunk, reply, components, allowedMentions: { parse: [], repliedUser: true } });
         lastId = sent.id;
         reply = undefined;
+        if (components) {
+          await buttons!.add(sent.id, msg.session_scope, withButtons!).catch((err) => {
+            ctx.log.error("store buttons failed", { message_id: sent.id, error: String(err) });
+          });
+        }
       }
       if (msg.media) {
         if (signal.aborted) throw new Error("send cancelled");

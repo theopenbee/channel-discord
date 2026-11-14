@@ -9,6 +9,7 @@ A minimal Discord channel for openbee, built on [`@theopenbee/channel-sdk`](http
 - One openbee session per channel and user (`discord:<channel_id>:<user_id>`). Threads are channels in Discord, so each thread gets its own session.
 - Inbound attachments up to `max_media_size` bytes are downloaded into openbee's media directory; larger ones are replaced by a `[attachment too large: <name>]` note.
 - Replies longer than 2000 characters are split into several messages, preferring line breaks. Text is sent first, then the file. Outgoing messages never ping `@everyone`, roles or users.
+- Messages with buttons (the `/clear` confirmation, choices offered by a worker or Bee, `/status`, `/engine`, `/cancel`) get Discord buttons. Only the user the message answers can click; the click counts as their reply, and the buttons are replaced by the choice. Buttons are kept in the plugin data directory for 90 days, so they still work after a restart. Clicks arrive over the gateway, so leave **Interactions Endpoint URL** empty in the Developer Portal.
 
 ## Create the bot
 

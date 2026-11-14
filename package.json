@@ -1,6 +1,6 @@
 {
   "name": "@theopenbee/channel-discord",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Discord channel plugin for openbee",
   "keywords": [
     "openbee",
@@ -35,7 +35,7 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@theopenbee/channel-sdk": "^0.1.0",
+    "@theopenbee/channel-sdk": "^0.3.0",
     "discord.js": "^14.16.0"
   },
   "devDependencies": {
