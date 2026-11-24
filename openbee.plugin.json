@@ -4,6 +4,7 @@
   "name": { "en": "Discord", "zh": "Discord" },
   "description": { "en": "Discord bot channel", "zh": "Discord 机器人渠道" },
   "command": ["node", "dist/index.js"],
+  "icon": "icon.svg",
   "config": [
     {
       "key": "token",
